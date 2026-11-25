@@ -53,3 +53,11 @@ VALID_END = "2012-06-30"
 # have no complete history and are dropped; tests/test_contract.py uses this
 # to bound how many rows may legitimately disappear.
 LAG_WARMUP = 7
+
+# Every raw column must be in FORBIDDEN, USED_RAW_COLS or IGNORED_RAW_COLS.
+# tests/test_contract.py fails on anything else, so a new column in the data
+# cannot enter the model silently (feature_columns() admits any numeric
+# column not in FORBIDDEN).
+USED_RAW_COLS = {"dteday", "temp", "atemp", "hum", "windspeed",
+                 "holiday", "workday", "weather"}
+IGNORED_RAW_COLS = {"season", "mnth", "weekday"}  # redundant with dteday

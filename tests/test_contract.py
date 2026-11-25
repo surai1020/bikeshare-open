@@ -56,3 +56,23 @@ def test_persistence_baseline_is_reported():
     """The baseline that matters for a lag-driven model is 'yesterday again'.
     It must be in the comparison, whatever its score."""
     assert "baseline_persistence" in MODELS
+
+
+from src.config import FORBIDDEN, IGNORED_RAW_COLS, USED_RAW_COLS
+
+
+def _unclassified(columns):
+    return sorted(set(columns) - FORBIDDEN - USED_RAW_COLS - IGNORED_RAW_COLS)
+
+
+def test_every_raw_column_is_classified(raw):
+    """A denylist admits a new column silently. This forces a decision."""
+    assert not _unclassified(raw.columns), (
+        f"unclassified raw columns: {_unclassified(raw.columns)}; "
+        "add each to FORBIDDEN, USED_RAW_COLS or IGNORED_RAW_COLS in src/config.py"
+    )
+
+
+def test_unclassified_detector_catches_a_new_column(raw):
+    """Guards the guard: a column nobody classified must be flagged."""
+    assert _unclassified(list(raw.columns) + ["leak_renamed"]) == ["leak_renamed"]
