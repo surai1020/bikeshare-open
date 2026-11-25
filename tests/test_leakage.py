@@ -4,6 +4,9 @@ test_no_forbidden_features is the single most valuable test in this repo:
 casual + registered == cnt exactly, so any model handed those columns
 scores R^2 = 1.0 and looks brilliant while having learned nothing.
 """
+import statistics
+from pathlib import Path
+
 import pandas as pd
 import pytest
 
@@ -64,3 +67,29 @@ def test_no_missing_values(feats):
 def test_dates_are_sorted_and_unique(feats):
     assert feats.dteday.is_monotonic_increasing
     assert feats.dteday.is_unique
+
+
+# --- cnt_roll_std_7: sample std (ddof=1) of cnt over the 7 days strictly before d ---
+# Availability: for date d the window is d-7..d-1, all known by end of d-1.
+
+RAW_CSV = Path(__file__).resolve().parent.parent / "data" / "raw" / "bike_daily.csv"
+
+
+def test_roll_std_7_matches_hand_computation(feats):
+    """Expected value comes from the raw CSV, not from the feature code."""
+    raw = pd.read_csv(RAW_CSV, parse_dates=["dteday"]).set_index("dteday")[TARGET]
+    window = raw["2011-06-08":"2011-06-14"]
+    assert len(window) == 7
+    expected = statistics.stdev(window)  # sample std, ddof=1 (~392.3098)
+    got = feats.set_index("dteday").loc[pd.Timestamp("2011-06-15"), "cnt_roll_std_7"]
+    assert got == pytest.approx(expected)
+
+
+def test_roll_std_7_is_absent_across_calendar_gap(feats):
+    """2011-03-10 is missing from the mirror, so the window for 2011-03-15
+    (Mar 8-14) is incomplete: the value must be NaN or the row dropped,
+    never a std computed over six days."""
+    assert "cnt_roll_std_7" in feats.columns, "cnt_roll_std_7 not built yet"
+    by_date = feats.set_index("dteday")
+    date = pd.Timestamp("2011-03-15")
+    assert date not in by_date.index or pd.isna(by_date.loc[date, "cnt_roll_std_7"])
