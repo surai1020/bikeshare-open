@@ -19,3 +19,7 @@ The relative-growth HGB model achieved validation R² of 0.5672 and MAE of 893.3
 I consider the relative-growth transformation defensible because it models proportional day-over-day change rather than assuming ridership is stationary in absolute terms. However, it changes the forecasting formulation by explicitly using yesterday's count as a scaling baseline. It should therefore be understood as an alternative modeling approach, not evidence that HGB is generally superior to Ridge. Ridge remained the best validation model among those tested.
 
 All Exercise 4 model comparisons and transformation decisions were made using the training and validation periods only. The test set was not used for these experiments.
+
+## Exercise 5: Ridge vs. Persistence
+
+On the test set, Ridge achieved an R² of 0.6356 and an MAE of 840.3 rides, compared with persistence at an R² of 0.5099 and an MAE of 840.1 rides. Ridge improved R² by 0.1257, meaning it explained more of the variation in daily ridership. However, persistence had a marginally lower MAE by just 0.2 rides, which is practically negligible. This shows that Ridge captures patterns beyond yesterday's ridership, but the simple persistence baseline remains remarkably competitive. The additional model complexity does not translate into a meaningful improvement in average absolute error.
